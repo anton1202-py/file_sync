@@ -1,34 +1,7 @@
 import os
 from pathlib import Path
 
-from .models import FileInfo, db, app
-
-class SyncFileWithDb:
-    """Синхронизация файлов с базой данных"""
-
-    def __init__(self):
-        self.app = app  # Сохраняем ссылку на приложение
-
-    def _add_files(self, directory: str) -> None:
-        """Добавляет файлы в БД"""
-
-        with self.app.app_context():  # Создаем контекст приложения
-            files_to_insert = []
-            for root, dirs, files in os.walk(directory):
-                data = (
-                    db.session.query(FileInfo)
-                    .filter(FileInfo.path_file == str(root).replace("\\", "/"))
-                    .all()
-                )
-                if data:
-                    for file_obj in data:
-                        common_file_path = (
-                            f"{file_obj.path_file}/{file_obj.name}{file_obj.extension}"
-                        )
-                        if not os.path.exists(common_file_path):
-                            db.session.delete(file_obj)
-            db.session.commit()  # Не забудьте зафиксировать изменения в БД
-
+from models import FileInfo, db, app
 
 
 class SyncFileWithDb:
@@ -51,10 +24,8 @@ class SyncFileWithDb:
                 )
                 if data:
                     for file_obj in data:
-                        common_file_path = (
-                            f"{file_obj.path_file}/{file_obj.name}{file_obj.extension}"
-                        )
-                        if not os.path.exists(common_file_path):
+                        common_file_path = os.path.join(file_obj.path_file, file_obj.name + file_obj.extension)
+                        if not common_file_path:
                             db.session.delete(file_obj)
 
                 # Записываю в БД файлы, которые еще не записаны
@@ -74,14 +45,8 @@ class SyncFileWithDb:
                     except:
                         file_size = 0
 
-                    if (
-                        not db.session.query(FileInfo)
-                        .filter(
-                            FileInfo.name == str(file_name),
-                            FileInfo.path_file == file_path,
-                        )
-                        .first()
-                    ):
+                    if (not db.session.query(FileInfo).filter(
+                        FileInfo.name == str(file_name), FileInfo.path_file == file_path).first()):
                         db_file_info = FileInfo(
                             name=str(file_name),
                             extension=str(file_extension),
@@ -90,8 +55,7 @@ class SyncFileWithDb:
                         )
                         files_to_insert.append(db_file_info)
                     if (len(files_to_insert) >= 7000 and i < (len(files) - 2)) or (
-                        i == (len(files) - 1) and files_to_insert
-                    ):
+                        i == (len(files) - 1) and files_to_insert):
                         db.session.bulk_save_objects(files_to_insert)
                         db.session.commit()
                         files_to_insert = []
@@ -109,10 +73,8 @@ class SyncFileWithDb:
                 )
                 if data:
                     for file_obj in data:
-                        common_file_path = (
-                            f"{file_obj.path_file}/{file_obj.name}{file_obj.extension}"
-                        )
-                        if not os.path.exists(common_file_path):
+                        common_file_path = os.path.join(file_obj.path_file, file_obj.name + file_obj.extension)
+                        if not common_file_path:
                             db.session.delete(file_obj)
                             db.session.commit()
 
