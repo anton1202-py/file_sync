@@ -19,7 +19,6 @@ services:
       - db
     env_file:
       - ./.env
-    privileged: true  # Запускаем контейнер с 
     volumes:
       - my_volume:/home/orbis-service/Downloads/
 
