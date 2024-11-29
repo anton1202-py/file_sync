@@ -20,7 +20,7 @@ services:
     env_file:
       - .env
     volumes:
-      - /home/orbis-service/Projects/orbis_test_flask:/src
+      - /home/orbis-service/Projects/orbis_test_flask/src:/src
 
 volumes:
   postgres_data:
