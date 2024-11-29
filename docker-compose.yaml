@@ -23,5 +23,4 @@ services:
       - /home/orbis-service/Projects/orbis_test_flask:/src
 
 volumes:
-  my_volume:
   postgres_data:
