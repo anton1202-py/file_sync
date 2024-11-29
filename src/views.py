@@ -2,10 +2,9 @@ from datetime import datetime
 import os
 from pathlib import Path
 from models import db, FileInfo
-from flask_restful import Resource
 
 
-class MainResponse(Resource):
+class MainResponse():
     def __init__(self, *args, **kwargs):
         super().__init__()
 
@@ -17,19 +16,8 @@ class MainResponse(Resource):
         
         file_amount = paginated_files.total 
         total_size = sum(file.size for file in paginated_files.items)
-        file_list = []
-        for file in paginated_files.items:
-            file_data = {
-                "id": file.id,
-                "name": file.name,
-                "extension": file.extension,
-                "path_file": file.path_file,
-                "size": file.size,
-                "date_create": file.date_create.isoformat(),
-                "date_change": file.date_change.isoformat() if file.date_change else None,
-                "comment": file.comment,
-            }
-            file_list.append(file_data)
+        file_list = [file.to_answer() for file in paginated_files.items]
+        
         response = {
             "file_amount": file_amount,
             "total_size": total_size,
@@ -44,17 +32,7 @@ class MainResponse(Resource):
 
     def one_file_info(self, file):
         """Информация по одному файлу"""
-        file_data = {
-            "id": file.id,
-            "name": file.name,
-            "extension": file.extension,
-            "path_file": file.path_file,
-            "size": file.size,
-            "date_create": file.date_create.isoformat(),
-            "date_change": file.date_change.isoformat() if file.date_change else None,
-            "comment": file.comment,
-        }
-        return file_data
+        return file.to_answer()
 
     def upload_file(self, upload_path, file):
         """
@@ -115,16 +93,7 @@ class MainResponse(Resource):
                 os.rename(old_file_path, new_file_path)
             else:
                 return {"message": " Old file not found."}
-            file_data = {
-                "id": file_obj.id,
-                "name": file_obj.name,
-                "extension": file_obj.extension,
-                "path_file": file_obj.path_file,
-                "size": file_obj.size,
-                "date_create": file_obj.date_create.isoformat(),
-                "date_change": file_obj.date_change.isoformat() if file_obj.date_change else None,
-                "comment": file_obj.comment,
-            }
-            return file_data
+            
+            return file_obj.to_answer()
         except Exception as e:
             return {"error": str(e)}

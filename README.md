@@ -5,12 +5,6 @@
 Клонируйте проект себе на компьютер:  
 `git clone https://github.com/anton1202-py/orbis_test_flask.git`
 
-Установите виртуальное окружение:  
-`python -m venv venv`
-
-Активируйте виртуальное окружение:  
-`. venv/bin/activate`
-
 Установите заисимости:  
 `pip install -r requirements.txt`
 

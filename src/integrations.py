@@ -45,8 +45,9 @@ class SyncFileWithDb:
                     except:
                         file_size = 0
 
-                    if (not db.session.query(FileInfo).filter(
-                        FileInfo.name == str(file_name), FileInfo.path_file == file_path).first()):
+                    file_obj = db.session.query(FileInfo).filter(
+                        FileInfo.name == str(file_name), FileInfo.path_file == file_path, FileInfo.extension == file_extension).first()
+                    if not file_obj:
                         db_file_info = FileInfo(
                             name=str(file_name),
                             extension=str(file_extension),

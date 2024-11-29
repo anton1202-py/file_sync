@@ -2,7 +2,6 @@ import os
 from models import FileInfo, app, db
 from flask import request, send_file, abort
 from flask_restx import Api
-from flasgger import Swagger
 
 from integrations import SyncFileWithDb
 from views import MainResponse
@@ -10,8 +9,6 @@ from views import MainResponse
 api = Api(app, version='1.0', title='File API',
              description='Работа с файлами и сохранением их в базу данных',
              )
-swagger = Swagger(app)
-
 
 
 @app.route('/api/sync', methods=['GET'])

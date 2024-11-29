@@ -18,10 +18,9 @@ services:
     depends_on:
       - db
     env_file:
-      - ./.env
-    privileged: true  # Запускаем контейнер с 
+      - .env
     volumes:
-      - my_volume:/home/orbis-service/Downloads/
+      - /home/orbis-service/Projects/orbis_test_flask:/src
 
 volumes:
   my_volume:
