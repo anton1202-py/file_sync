@@ -4,15 +4,14 @@ services:
   db:
     image: postgres:15.0-alpine
     environment:
-      POSTGRES_DB: DB_NAME
-      POSTGRES_USER: USERNAME
-      POSTGRES_PASSWORD: PASSWORD
+      POSTGRES_DB: filedb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: testadmin
     volumes:
       - postgres_data:/var/lib/postgresql/data/
 
   web:
-    build: .
-    restart: always
+    image: my_flask_app
     ports:
       - "5000:5000"
     depends_on:
@@ -20,7 +19,7 @@ services:
     env_file:
       - .env
     volumes:
-      - /home/orbis-service/Projects/orbis_test_flask/src:/src
+      - /home/orbis-service/Downloads:/mnt
 
 volumes:
   postgres_data:

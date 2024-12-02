@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from models import FileInfo, app, db
+from models.models import FileInfo, app, db
 
 
 class SyncFileWithDb:
