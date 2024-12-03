@@ -11,7 +11,7 @@ services:
       - postgres_data:/var/lib/postgresql/data/
 
   web:
-    image: my_flask_app
+    image: working-with-files
     ports:
       - "5000:5000"
     depends_on:

@@ -6,10 +6,8 @@ COPY requirements.txt /src
 
 RUN pip3 install -r /src/requirements.txt --no-cache-dir
 
-
 COPY src/ /src
-
 
 WORKDIR /src
 
-CMD ["python3", "app.py"]
+CMD ["uwsgi", "--ini", "../uwsgi.ini"]
