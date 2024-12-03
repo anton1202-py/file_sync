@@ -1,20 +1,26 @@
-from sqlalchemy import func
+import dataclasses as dc
+import typing
 
-from config import app, db
+import sqlalchemy as sa
+from sqlalchemy import Column, DateTime, Float, Integer, Text, func
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
 
 
-class FileInfo(db.Model):
+class FileInfo(Base):
+    __tablename__ = "file_info"  # Указываем имя таблицы
 
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, nullable=False)
-    extension = db.Column(db.Text, nullable=True)
-    path_file = db.Column(db.Text, nullable=True)
-    size = db.Column(db.Float, nullable=True)
-    date_create = db.Column(
-        db.DateTime(timezone=True), server_default=func.now(), nullable=False
+    id = Column(Integer, primary_key=True)
+    name = Column(Text, nullable=False)
+    extension = Column(Text, nullable=True)
+    path_file = Column(Text, nullable=True)
+    size = Column(Float, nullable=True)
+    date_create = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
     )
-    date_change = db.Column(db.DateTime(timezone=True), nullable=True)
-    comment = db.Column(db.Text, nullable=True)
+    date_change = Column(DateTime(timezone=True), nullable=True)
+    comment = Column(Text, nullable=True)
 
     def to_answer(self):
         """Возвращает словарь с информацией о файле"""
@@ -28,7 +34,3 @@ class FileInfo(db.Model):
             "date_change": self.date_change.isoformat() if self.date_change else None,
             "comment": self.comment,
         }
-
-
-if __name__ == "__main__":
-    app.run(debug=True)

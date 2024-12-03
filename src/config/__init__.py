@@ -1,24 +1,21 @@
 import dataclasses as dc
 import os
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+import yaml
+
+from base_module.models import Model
 
 
 @dc.dataclass
-class ConfigProject:
+class ConfigProject(Model):
     """."""
 
-    basedir = os.path.abspath(os.path.dirname("/mnt"))
-
-    def init_app(app):
-        username = os.getenv("USERNAME")
-        psw = os.getenv("PSW")
-        db_name = os.getenv("DB_NAME")
-        sqlalchemy_database_url = f"postgresql://{username}:{psw}@db/{db_name}"
-        app.config["SQLALCHEMY_DATABASE_URI"] = sqlalchemy_database_url
+    storage_dir: str = dc.field(default="/mnt")
+    username: str = dc.field(default=None)
+    psw: str = dc.field(default=None)
+    db_name: str = dc.field(default=None)
 
 
-app = Flask(__name__)
-ConfigProject.init_app(app)
-db = SQLAlchemy(app)
+config: ConfigProject = ConfigProject.load(
+    yaml.safe_load(open(os.getenv("YAML_PATH", "config.yaml"))) or {}
+)
