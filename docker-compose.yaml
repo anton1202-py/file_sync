@@ -11,7 +11,8 @@ services:
       - postgres_data:/var/lib/postgresql/data/
 
   web:
-    image: working-with-files
+    build: .
+    restart: always
     ports:
       - "5000:5000"
     depends_on:

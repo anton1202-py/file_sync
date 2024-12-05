@@ -5,7 +5,7 @@ from pathlib import Path
 from flask import abort, send_file
 from sqlalchemy.orm import Session as PGSession
 
-from config import ProjectConfig
+from config import config
 from models.orm_models import FileInfo
 
 
@@ -94,10 +94,10 @@ class SyncFileWithDb:
         self._del_files_from_db(directory)
 
     def sync_files(self) -> list[FileInfo]:
-        self.sync_local_storage_with_db(ProjectConfig.storage_dir)
+        self.sync_local_storage_with_db(config.storage_dir)
         response = (
             self._pg.query(FileInfo)
-            .filter(FileInfo.path_file.like(f"%{ProjectConfig.storage_dir}%"))
+            .filter(FileInfo.path_file.like(f"%{config.storage_dir}%"))
             .all()
         )
         return response
@@ -174,7 +174,7 @@ class WorkerWithFIles:
         if file_obj is None or file_obj.filename == "":
             return {"error": "No selected file"}
         if not upload_path:
-            upload_path = ProjectConfig.basedir
+            upload_path = config.storage_dir
         if not os.path.exists(upload_path):
             os.makedirs(upload_path)
         file_path = os.path.join(upload_path, file_obj.filename)
