@@ -11,6 +11,7 @@ def setup_app():
     current = flask.Flask(__name__)
     username = config.user
     psw = config.password
+
     db_name = config.database
     sqlalchemy_database_url = f"postgresql://{username}:{psw}@localhost/{db_name}"
     pg.setup(current)
