@@ -1,9 +1,0 @@
-username: admin
-psw: testadmin
-db_name: filedb
-
-host: db
-port: 5432
-user: admin
-password: testadmin
-database: filedb

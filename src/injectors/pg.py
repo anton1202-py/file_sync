@@ -6,12 +6,13 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
+from base_module.exceptions import ModuleException
 from base_module.models import BaseOrmModel
 from base_module.singletons import ThreadIsolatedSingleton
 from config import PgConfig
 
 
-class ConnectionsException:
+class ConnectionsException(ModuleException):
     """."""
 
     @classmethod
@@ -43,7 +44,7 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
             self._init_db()
 
         with self._pg.begin():
-            self._pg.execute(f"SET ROLE {self._conf.user}")
+            self._pg.execute(sa.text(f"SET ROLE {self._conf.user}"))
             return self._pg
 
     def acquire_session(self) -> Session:
@@ -87,6 +88,7 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
             echo=self._conf.debug,
             query_cache_size=0,
         )
+
         if not database_exists(engine.url):
             create_database(engine.url)
 
@@ -95,15 +97,15 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
         with engine.connect() as connection:
             connection: sa.engine.base.Connection
             with connection.begin():
-                dialect = engine.dialect
+                dialect = connection.dialect
                 for schema in schemas:
-                    if not dialect.has_schema(engine, schema):  # noqa
+                    if not dialect.has_schema(connection, schema):  # noqa
                         connection.execute(sa.schema.CreateSchema(schema))
 
                 for statement in self._init_statements or []:
                     connection.execute(statement)
 
-                connection.run_callable(BaseOrmModel.REGISTRY.metadata.create_all)
+                BaseOrmModel.REGISTRY.metadata.create_all(connection)
 
         session_fabric = sessionmaker(engine, expire_on_commit=False)
         self._pg = sa.orm.scoped_session(session_fabric)

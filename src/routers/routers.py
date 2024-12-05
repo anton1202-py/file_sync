@@ -15,32 +15,31 @@ def sync_files():
 
 @file_router.get("/files")
 def get_files_info():
-    main_data = file_injector()
-    response = main_data.get_files_info()
+    fi = file_injector()
+    response = fi.get_files_info()
     return jsonify(response)
 
 
-@file_router.post("/files_in_folder")
+@file_router.post("/files")
 def files_in_folder():
-    main_data = file_injector()
-    print(request.get_json().get("directory_name", None))
-    response = main_data.files_in_folder(
+    fi = file_injector()
+    response = fi.files_in_folder(
         directory_name=request.get_json().get("directory_name", None)
     )
     return jsonify(response)
 
 
-@file_router.get("/file/<int:file_id>")
+@file_router.get("/files/<int:file_id>")
 def get_one_file_info(file_id):
-    main_data = file_injector()
-    response = main_data.one_file_info(file_id=file_id)
+    fi = file_injector()
+    response = fi.one_file_info(file_id=file_id)
     return jsonify(response)
 
 
-@file_router.get("/file/<int:file_id>/download")
+@file_router.get("/files/<int:file_id>/download")
 def download_file(file_id):
-    main_data = file_injector()
-    response = main_data.get_download_file(file_id=file_id)
+    fi = file_injector()
+    response = fi.get_download_file(file_id=file_id)
     return jsonify(response)
 
 
@@ -48,23 +47,23 @@ def download_file(file_id):
 def upload_file():
     upload_path = request.form.get("upload_path")
     file_obj = request.files.getlist("")[0] if "" in request.files else None
-    main_data = file_injector()
-    response = main_data.upload_file(file_obj=file_obj, upload_path=upload_path)
+    fi = file_injector()
+    response = fi.upload_file(file_obj=file_obj, upload_path=upload_path)
     return jsonify(response)
 
 
-@file_router.delete("/file/<int:file_id>/del")
+@file_router.delete("/files/<int:file_id>")
 def delete_file(file_id):
-    main_data = file_injector()
-    response = main_data.delete_file(file_id=file_id)
+    fi = file_injector()
+    response = fi.delete_file(file_id=file_id)
     return jsonify(response)
 
 
-@file_router.put("/file/update")
-def put_update_file():
-    main_data = file_injector()
-    response = main_data.update_file(
-        file_id=request.get_json().get("file_id", None),
+@file_router.post("/file/<int:file_id>")
+def put_update_file(file_id):
+    fi = file_injector()
+    response = fi.update_file(
+        file_id=file_id,
         new_name=request.get_json().get("new_name", None),
         new_comment=request.get_json().get("new_comment", None),
         new_path_file=request.get_json().get("new_path_file", None),

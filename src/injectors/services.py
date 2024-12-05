@@ -1,13 +1,11 @@
 from services.services import SyncFileWithDb, WorkerWithFIles
 
+from . import connections
+
 
 def sync_injector() -> SyncFileWithDb:
-    from app import session
-
-    return SyncFileWithDb(session)
+    return SyncFileWithDb(pg_connection=connections.pg.acquire_session())
 
 
 def file_injector() -> WorkerWithFIles:
-    from app import session
-
-    return WorkerWithFIles(session)
+    return WorkerWithFIles(pg_connection=connections.pg.acquire_session())

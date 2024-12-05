@@ -32,18 +32,5 @@ class FileInfo(BaseOrmModel):
     )
     comment: str = dc.field(default=None, metadata={"sa": sa.Column(sa.Text)})
 
-    def to_answer(self):
-        """Возвращает словарь с информацией о файле"""
-        return {
-            "id": self.id,
-            "name": self.name,
-            "extension": self.extension,
-            "path_file": self.path_file,
-            "size": self.size,
-            "date_create": self.date_create.isoformat(),
-            "date_change": self.date_change.isoformat() if self.date_change else None,
-            "comment": self.comment,
-        }
-
 
 BaseOrmModel.REGISTRY.mapped(FileInfo)

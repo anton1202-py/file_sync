@@ -3,6 +3,7 @@ from datetime import datetime
 from pathlib import Path
 
 from flask import abort, send_file
+from sqlalchemy.orm import Session as PGSession
 
 from config import ProjectConfig
 from models.orm_models import FileInfo
@@ -11,8 +12,8 @@ from models.orm_models import FileInfo
 class SyncFileWithDb:
     """Синхронизация файлов с базой данных"""
 
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, pg_connection: PGSession):
+        self._pg = pg_connection
 
     def _add_files(self, directory: str) -> None:
         """Добавлет файлы в БД"""
@@ -20,7 +21,7 @@ class SyncFileWithDb:
         files_to_insert = []
         for root, dirs, files in os.walk(directory):
             data = (
-                self.session.query(FileInfo)
+                self._pg.query(FileInfo)
                 .filter(FileInfo.path_file == str(root).replace("\\", "/"))
                 .all()
             )
@@ -30,7 +31,7 @@ class SyncFileWithDb:
                         file_obj.path_file, file_obj.name + file_obj.extension
                     )
                     if not common_file_path:
-                        self.session.delete(file_obj)
+                        self._pg.delete(file_obj)
             # Записываю в БД файлы, которые еще не записаны
             for i, file in enumerate(files):
                 common_file_data = Path(file)
@@ -47,7 +48,7 @@ class SyncFileWithDb:
                 except:
                     file_size = 0
                 file_obj = (
-                    self.session.query(FileInfo)
+                    self._pg.query(FileInfo)
                     .filter(
                         FileInfo.name == str(file_name),
                         FileInfo.path_file == file_path,
@@ -66,8 +67,8 @@ class SyncFileWithDb:
                 if (len(files_to_insert) >= 7000 and i < (len(files) - 2)) or (
                     i == (len(files) - 1) and files_to_insert
                 ):
-                    self.session.bulk_save_objects(files_to_insert)
-                    self.session.commit()
+                    self._pg.bulk_save_objects(files_to_insert)
+                    self._pg.commit()
                     files_to_insert = []
 
     def _del_files_from_db(self, directory: str) -> None:
@@ -76,7 +77,7 @@ class SyncFileWithDb:
             # Сравниваю, есть ли в файловой системе файлы, которые есть в БД.
             # Если нет - удаляю из БД
             data = (
-                self.session.query(FileInfo)
+                self._pg.query(FileInfo)
                 .filter(FileInfo.path_file == str(root).replace("\\", "/"))
                 .all()
             )
@@ -86,8 +87,8 @@ class SyncFileWithDb:
                         file_obj.path_file, file_obj.name + file_obj.extension
                     )
                     if not common_file_path:
-                        self.session.delete(file_obj)
-                        self.session.commit()
+                        self._pg.delete(file_obj)
+                        self._pg.commit()
 
     def sync_local_storage_with_db(self, directory):
         """Синхронизирует локальное хранилище файлов с базой данных"""
@@ -104,9 +105,11 @@ class SyncFileWithDb:
 
 class WorkerWithFIles:
 
-    def __init__(self, session, synchron: SyncFileWithDb = None, *args, **kwargs):
+    def __init__(
+        self, pg_connection: PGSession, synchron: SyncFileWithDb = None, *args, **kwargs
+    ):
         super().__init__()
-        self.session = session
+        self._pg = pg_connection
         self.synchron = synchron
 
     def get_files_info(self) -> dict:
@@ -119,8 +122,8 @@ class WorkerWithFIles:
         **page** - номер страницы (по умолчанию 1)
         """
 
-        query = self.session.query(FileInfo).all()
-        response = [file.to_answer() for file in query]
+        query = self._pg.query(FileInfo).all()
+        response = [file.load(file) for file in query]
         return response
 
     def files_in_folder(self, directory_name: str = None) -> dict:
@@ -135,7 +138,7 @@ class WorkerWithFIles:
         if not directory_name:
             return {"message": "directory_name is required"}, 400
         response = (
-            self.session.query(FileInfo)
+            self._pg.query(FileInfo)
             .filter(FileInfo.path_file.like(f"%{directory_name}%"))
             .all()
         )
@@ -145,10 +148,10 @@ class WorkerWithFIles:
         """Информация по одному файлу"""
         if not file_id:
             return {"message": "file_id is required"}
-        file = self.session.query(FileInfo).filter(FileInfo.id == file_id).first()
+        file = self._pg.query(FileInfo).filter(FileInfo.id == file_id).first()
         if not file:
             return {"message": "File not found."}
-        return file.to_answer()
+        return file.load(file)
 
     def get_download_file(self, file_id: int = None):
         """Скачать файл по ID"""
@@ -193,8 +196,8 @@ class WorkerWithFIles:
                 FileInfo.path_file == upload_path,
             ).first()
             if not file:
-                self.session.add(new_file_info)
-                self.session.commit()
+                self._pg.add(new_file_info)
+                self._pg.commit()
                 return {
                     "message": f"File info saved successfully! File ID = {new_file_info.id}"
                 }
@@ -216,11 +219,11 @@ class WorkerWithFIles:
             abort(404, description="File not found on server")
         try:
             os.remove(file_path)
-            self.session.delete(file)
-            self.session.commit()
+            self._pg.delete(file)
+            self._pg.commit()
             return {"message": "File deleted successfully"}
         except Exception as e:
-            self.session.rollback()  # Откат транзакции в случае ошибки
+            self._pg.rollback()  # Откат транзакции в случае ошибки
             return {"error": str(e)}
 
     def update_file(
@@ -239,23 +242,17 @@ class WorkerWithFIles:
             old_file_path = os.path.join(
                 file_obj.path_file, file_obj.name + file_obj.extension
             )
-            update_name = file_obj.name
-            update_path = file_obj.path_file
-            update_comment = file_obj.comment
 
             if new_name:
-                update_name = new_name
+                file_obj.name = new_name
             if new_comment:
-                update_comment = new_comment
+                file_obj.comment = new_comment
             if new_path_file:
-                update_path = new_path_file
+                file_obj.path_file = new_path_file
 
-            file_obj.name = update_name
-            file_obj.path_file = update_path
-            file_obj.comment = update_comment
-            if update_name == new_name or update_path == new_path_file:
-                file_obj.date_change = datetime.now()
-            self.session.commit()
+            file_obj.date_change = datetime.now()
+
+            self._pg.commit()
             new_file_path = os.path.join(
                 file_obj.path_file, file_obj.name + file_obj.extension
             )
@@ -264,6 +261,6 @@ class WorkerWithFIles:
             else:
                 return {"message": " Old file not found."}
 
-            return file_obj.to_answer()
+            return file_obj.load(file_obj)
         except Exception as e:
             return {"error": str(e)}
