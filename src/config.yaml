@@ -1,6 +1,0 @@
-
-Напишите в файле config.yaml параметры для соединения к базе данных
-
-username: YOU_USERNAME
-psw: YOU_PASSWORD
-db_name: YOU_DATABASE_NAME

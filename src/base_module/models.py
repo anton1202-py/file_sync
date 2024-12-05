@@ -3,6 +3,7 @@ import typing as t
 from datetime import date, datetime
 
 import dataclass_factory
+from sqlalchemy import orm
 from sqlalchemy.ext.declarative import declarative_base
 
 TV_MODEL = t.TypeVar("TV_MODEL")
@@ -54,3 +55,11 @@ class Model:
         if isinstance(data, cls):
             return data
         return cls.FACTORY.load(data, cls)
+
+
+class BaseOrmModel(Model):
+    """."""
+
+    __sa_dataclass_metadata_key__: t.ClassVar = "sa"
+    __tablename__: t.ClassVar = None
+    REGISTRY: t.ClassVar = orm.registry()
