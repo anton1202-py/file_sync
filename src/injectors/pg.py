@@ -76,6 +76,13 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
         return schemas
 
     def _init_db(self):
+        print(
+            self._conf.user,
+            self._conf.password,
+            self._conf.host,
+            self._conf.port,
+            self._conf.database,
+        )
         engine = sa.create_engine(
             sa.engine.URL.create(
                 "postgresql+psycopg2",
@@ -92,7 +99,9 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
         if not database_exists(engine.url):
             create_database(engine.url)
 
+        print("before schcemas")
         schemas = self.__set_schemas()
+        print("after schcemas")
 
         with engine.connect() as connection:
             connection: sa.engine.base.Connection

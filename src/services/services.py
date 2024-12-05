@@ -74,8 +74,6 @@ class SyncFileWithDb:
     def _del_files_from_db(self, directory: str) -> None:
         """Удаляет файлы из БД, если нет в файловом хранилище"""
         for root, dirs, files in os.walk(directory):
-            # Сравниваю, есть ли в файловой системе файлы, которые есть в БД.
-            # Если нет - удаляю из БД
             data = (
                 self._pg.query(FileInfo)
                 .filter(FileInfo.path_file == str(root).replace("\\", "/"))
@@ -96,9 +94,11 @@ class SyncFileWithDb:
         self._del_files_from_db(directory)
 
     def sync_files(self) -> list[FileInfo]:
-        self.sync_local_storage_with_db(ProjectConfig.basedir)
-        response = FileInfo.query.filter(
-            FileInfo.path_file.like(f"%{ProjectConfig.basedir}%")
+        self.sync_local_storage_with_db(ProjectConfig.storage_dir)
+        response = (
+            self._pg.query(FileInfo)
+            .filter(FileInfo.path_file.like(f"%{ProjectConfig.storage_dir}%"))
+            .all()
         )
         return response
 
@@ -210,7 +210,7 @@ class WorkerWithFIles:
         """Удаляет файл из базы данных и из файловой системы."""
         if not file_id:
             return {"message": "file_id is required"}
-        file = FileInfo.query.filter(FileInfo.id == file_id).first()
+        file = self._pg.query(FileInfo).filter(FileInfo.id == file_id).first()
         if not file:
             return {"message": "File not found."}
 
