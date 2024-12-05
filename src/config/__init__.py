@@ -44,14 +44,7 @@ class ProjectConfig(Model):
     password: str = dc.field(default=os.getenv("STORAGES_PGSQL_PASS"))
     database: str = dc.field(default=os.getenv("STORAGES_PGSQL_DB"))
 
-    # username: str = dc.field(default=None)
-    # psw: str = dc.field(default=None)
-    # db_name: str = dc.field(default=None)
 
-
-x = os.getenv("YAML_PATH")
-
-print(x)
 config: ProjectConfig = ProjectConfig.load(
-    yaml.safe_load(open("config/config.yaml")) or {}
+    yaml.safe_load(open(os.getenv("YAML_PATH", "config/config.yaml"))) or {}
 )
