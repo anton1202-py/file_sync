@@ -1,3 +1,4 @@
+CONTAINER_NAME=working-with-files-container
 IMAGE_NAME = working-with-files
 DOCKERFILE = Dockerfile
 CONTEXT = .

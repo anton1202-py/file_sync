@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from flask import abort, send_file
+from flask import Response, abort, send_file
 from sqlalchemy.orm import Session as PGSession
 
 from config import config
@@ -17,7 +17,6 @@ class SyncFileWithDb:
 
     def _add_files(self, directory: str) -> None:
         """Добавлет файлы в БД"""
-
         files_to_insert = []
         for root, dirs, files in os.walk(directory):
             data = (
@@ -112,7 +111,7 @@ class WorkerWithFIles:
         self._pg = pg_connection
         self.synchron = synchron
 
-    def get_files_info(self) -> dict:
+    def get_files_info(self) -> list[FileInfo]:
         """
         Информация по всем файлам
 
@@ -121,12 +120,11 @@ class WorkerWithFIles:
         **per_page** - число строк, выдаваемое на странице (по умолчанию 100)
         **page** - номер страницы (по умолчанию 1)
         """
-
         query = self._pg.query(FileInfo).all()
         response = [file.load(file) for file in query]
         return response
 
-    def files_in_folder(self, directory_name: str = None) -> dict:
+    def files_in_folder(self, directory_name: str = None) -> list[FileInfo]:
         """
         Информация по файлам из введенной папки
 
@@ -144,7 +142,7 @@ class WorkerWithFIles:
         )
         return response
 
-    def one_file_info(self, file_id: int = None):
+    def one_file_info(self, file_id: int = None) -> FileInfo:
         """Информация по одному файлу"""
         if not file_id:
             return {"message": "file_id is required"}
@@ -153,7 +151,7 @@ class WorkerWithFIles:
             return {"message": "File not found."}
         return file.load(file)
 
-    def get_download_file(self, file_id: int = None):
+    def get_download_file(self, file_id: int = None) -> Response:
         """Скачать файл по ID"""
         try:
             if not file_id:

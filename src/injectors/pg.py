@@ -1,3 +1,5 @@
+import logging
+import sys
 import time
 import typing as t
 
@@ -17,7 +19,10 @@ class ConnectionsException(ModuleException):
 
     @classmethod
     def acquire_error(cls):
-        raise cls("Сервис временно недоступен", code=503)
+        try:
+            raise cls("Сервис временно недоступен", code=503)
+        except Exception as e:
+            logging.error(str(e).encode("utf-8"))
 
 
 class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
@@ -42,10 +47,10 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
     def _acquire_session(self) -> Session:
         if not self._pg:
             self._init_db()
-
-        with self._pg.begin():
-            self._pg.execute(sa.text(f"SET ROLE {self._conf.user}"))
-            return self._pg
+        if not self._pg.is_active:
+            with self._pg.begin():
+                self._pg.execute(sa.text(f"SET ROLE {self._conf.user}"))
+        return self._pg
 
     def acquire_session(self) -> Session:
         for i in range(self._acquire_attempts):
@@ -76,13 +81,6 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
         return schemas
 
     def _init_db(self):
-        print(
-            self._conf.user,
-            self._conf.password,
-            self._conf.host,
-            self._conf.port,
-            self._conf.database,
-        )
         engine = sa.create_engine(
             sa.engine.URL.create(
                 "postgresql+psycopg2",
@@ -98,10 +96,7 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
 
         if not database_exists(engine.url):
             create_database(engine.url)
-
-        print("before schcemas")
         schemas = self.__set_schemas()
-        print("after schcemas")
 
         with engine.connect() as connection:
             connection: sa.engine.base.Connection
