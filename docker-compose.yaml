@@ -12,13 +12,13 @@ services:
 
   web:
     image: working-with-files:1.0.0
+    environment:
+      YAML_PATH: config_files/config.yaml
     restart: "always"
     ports:
       - "5000:5000"
     depends_on:
       - db
-    env_file:
-      - .env
     volumes:
       - /home/orbis-service/Downloads:/mnt
       - /home/orbis-service/Projects/orbis_test_flask/config_files/:/src/config_files
