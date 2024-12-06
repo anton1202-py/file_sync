@@ -1,6 +1,0 @@
-host: db
-port: 5432
-user: admin
-password: testadmin
-database: filedb
-max_pool_connections: 100

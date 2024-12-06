@@ -16,13 +16,21 @@
 со следующими ключами:  
 
 ```
-username: YOU_USERNAME
-psw: YOU_PASSWORD
-db_name: YOU_DATABASE_NAME
+pg:
+  host: HOST
+  port: POST
+  user: USERNAME
+  password: PASSWORD
+  database: DATABASE_NAME
+  max_pool_connections: MAX_POOL_CONNECTIONS
 ```
 
 Запустите файл Makefile командой
 `make`
+
+Запустите файл docker-compose командой
+`docker-compose up`
+
 
 Кратко о функция:  
 1. Получение списка информации о всех файлах (реализовано с пагинацией).  

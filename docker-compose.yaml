@@ -21,7 +21,7 @@ services:
       - .env
     volumes:
       - /home/orbis-service/Downloads:/mnt
-      - /home/orbis-service/Projects/orbis_test_flask/modules/:/src/config_yaml
+      - /home/orbis-service/Projects/orbis_test_flask/config_files/:/src/config_files
 
 volumes:
   postgres_data:

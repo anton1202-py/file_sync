@@ -1,5 +1,4 @@
 import logging
-import sys
 import time
 import typing as t
 
@@ -93,7 +92,6 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
             echo=self._conf.debug,
             query_cache_size=0,
         )
-
         if not database_exists(engine.url):
             create_database(engine.url)
         schemas = self.__set_schemas()
