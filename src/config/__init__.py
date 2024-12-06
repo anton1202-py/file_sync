@@ -10,11 +10,11 @@ from base_module.models import Model
 class PgConfig(Model):
     """."""
 
-    host: str = dc.field(default=os.getenv("PGSQL_HOST", "db"))
+    host: str = dc.field(default=os.getenv("PGSQL_HOST"))
     port: int = dc.field(default=int(os.getenv("PGSQL_PORT", 5432)))
-    user: str = dc.field(default=os.getenv("PGSQL_USER", "admin"))
-    password: str = dc.field(default=os.getenv("PGSQL_PASS", "testadmin"))
-    database: str = dc.field(default=os.getenv("PGSQL_DB_NAME", "filedb"))
+    user: str = dc.field(default=os.getenv("PGSQL_USER"))
+    password: str = dc.field(default=os.getenv("PGSQL_PASS"))
+    database: str = dc.field(default=os.getenv("PGSQL_DB_NAME"))
     max_pool_connections: int = dc.field(default=100)
     debug: bool = dc.field(default=False)
     schema: str = dc.field(default="public")
@@ -29,5 +29,5 @@ class ProjectConfig(Model):
 
 
 config: ProjectConfig = ProjectConfig.load(
-    yaml.safe_load(open(os.getenv("YAML_PATH", "config/config.yaml"))) or {}
+    yaml.safe_load(open(os.getenv("YAML_PATH", "config_yaml/config.yaml"))) or {}
 )
