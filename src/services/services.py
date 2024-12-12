@@ -203,9 +203,7 @@ class WorkerWithFIles:
                 )
                 if not file:
                     self._pg.add(new_file_info)
-                    return {
-                        "message": f"File info saved successfully! File ID = {new_file_info.id}"
-                    }
+                    return {"file_id": new_file_info.id}
                 else:
                     return {"error": "Файл уже существет"}
         except Exception as e:

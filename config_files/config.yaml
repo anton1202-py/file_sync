@@ -5,3 +5,11 @@ pg:
   password: testadmin
   database: filedb
   max_pool_connections: 100
+
+rabbit:
+  host: localhost
+  port: 5672
+  user: guest
+  password: guest
+  routing_key: file-tasks
+  queue_name: file-tasks

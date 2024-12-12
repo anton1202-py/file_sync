@@ -23,6 +23,14 @@ pg:
   password: PASSWORD
   database: DATABASE_NAME
   max_pool_connections: MAX_POOL_CONNECTIONS
+
+rabbit:
+  host: rabbit
+  port: 5672
+  user: guest
+  password: guest
+  routing_key: file-tasks
+  queue_name: file-tasks
 ```
 
 Запустите файл Makefile командой

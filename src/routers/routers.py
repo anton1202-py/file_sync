@@ -2,6 +2,7 @@ import flask
 from flask import jsonify, request
 
 from injectors.services import file_injector, sync_injector
+from injectors.tasks import processing_injector
 
 file_router = flask.Blueprint("tasks", __name__, url_prefix="/api/")
 
@@ -68,4 +69,27 @@ def put_update_file(file_id):
         new_comment=request.get_json().get("new_comment", None),
         new_path_file=request.get_json().get("new_path_file", None),
     )
+    return jsonify(response)
+
+
+@file_router.post("/processing/<int:file_id>")
+def processing_picture(file_id):
+    scale = request.get_json().get("scale", 100)
+    angle_rotate = request.get_json().get("angle_rotate", 0)
+    ts = processing_injector()
+    response = ts.create_task(file_id, {"scale": scale, "angle_rotate": angle_rotate})
+    return jsonify(response)
+
+
+@file_router.get("/tasks")
+def tasks_list():
+    ts = processing_injector()
+    response = ts.get_all()
+    return jsonify(response)
+
+
+@file_router.get("/tasks/<int:task_id>")
+def tasks_status(task_id):
+    ts = processing_injector()
+    response = ts.get(task_id)
     return jsonify(response)
