@@ -7,7 +7,7 @@ pg:
   max_pool_connections: 100
 
 rabbit:
-  host: localhost
+  host: rabbitmq
   port: 5672
   user: guest
   password: guest

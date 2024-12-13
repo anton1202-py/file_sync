@@ -33,5 +33,19 @@ services:
       - /home/orbis-service/Downloads:/mnt
       - /home/orbis-service/Projects/orbis_test_flask/config_files/:/src/config_files
 
+  web-worker:
+    image: working-with-files:1.0.0
+    environment:
+      YAML_PATH: config_files/config.yaml
+    restart: "always"
+    command: ["python3.10", "-u", "scripts/tasks_worker.py"] 
+    depends_on:
+      - db
+      - rabbitmq
+      - web
+    volumes:
+      - /home/orbis-service/Downloads:/mnt
+      - /home/orbis-service/Projects/orbis_test_flask/config_files/:/src/config_files
+
 volumes:
   postgres_data:

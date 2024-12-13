@@ -78,7 +78,6 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
                     col.type.schema = col.type.schema or self._conf.schema
                     if col.type.schema not in schemas:
                         schemas.append(col.type.schema)
-
         return schemas
 
     def _init_db(self):
