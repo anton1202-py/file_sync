@@ -8,10 +8,10 @@ from base_module import sa_operator
 from base_module.exceptions import ModuleException
 from base_module.rabbit import TaskIdentMessageModel
 from base_module.sevices.rabbit import RabbitService
-from models.orm_models import FileInfo, PictureProcessingTask, TaskStatus
+from models.orm_models import FileInfo, ImageProcessingTask, TaskStatus
 
 
-class PictureProcessing:
+class ImageProcessing:
 
     def __init__(
         self,
@@ -26,15 +26,15 @@ class PictureProcessing:
 
     def create_task(
         self, file_id: int, processing_parameters: dict
-    ) -> PictureProcessingTask:
+    ) -> ImageProcessingTask:
 
         if self.check_exists(file_id):
-            task = PictureProcessingTask(
+            task = ImageProcessingTask(
                 file_id=file_id,
                 processing_parameters=processing_parameters,
             )
         else:
-            task = PictureProcessingTask(
+            task = ImageProcessingTask(
                 file_id=file_id,
                 processing_parameters=processing_parameters,
                 status=TaskStatus.ERROR,
@@ -47,25 +47,25 @@ class PictureProcessing:
 
         published = self._rabbit.publish(message, properties=pika.BasicProperties())
         if published:
-            return task.to_dict()
+            return task.dump()
 
         with self._pg.begin():
             self._pg.delete(task)
 
-    def get_all(self) -> list[PictureProcessingTask]:
+    def get_all(self) -> list[ImageProcessingTask]:
         """."""
         with self._pg.begin():
-            q = self._pg.query(PictureProcessingTask)
-            q = q.order_by(sa.desc(PictureProcessingTask.created_at))
+            q = self._pg.query(ImageProcessingTask)
+            q = q.order_by(sa.desc(ImageProcessingTask.created_at))
             return q.all()
 
-    def get(self, task_id: int) -> PictureProcessingTask:
+    def get(self, task_id: int) -> ImageProcessingTask:
         with self._pg.begin():
-            task: PictureProcessingTask = (
-                self._pg.query(PictureProcessingTask)
+            task: ImageProcessingTask = (
+                self._pg.query(ImageProcessingTask)
                 .filter(
                     sa.and_(
-                        sa_operator.eq(PictureProcessingTask.task_id, task_id),
+                        sa_operator.eq(ImageProcessingTask.task_id, task_id),
                     )
                 )
                 .one_or_none()

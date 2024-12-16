@@ -12,7 +12,7 @@ from base_module.logger import ClassesLoggerAdapter
 from base_module.mule import BaseMule
 from base_module.rabbit import TaskIdentMessageModel
 from base_module.sevices.rabbit import RabbitService
-from models.orm_models import FileInfo, PictureProcessingTask, TaskStatus
+from models.orm_models import FileInfo, ImageProcessingTask, TaskStatus
 
 
 class TasksWorker(BaseMule):
@@ -30,10 +30,10 @@ class TasksWorker(BaseMule):
         self._storage_dir = storage_dir
         self._logger = ClassesLoggerAdapter.create(self)
 
-    def _handle(self, task: PictureProcessingTask):
+    def _handle(self, task: ImageProcessingTask):
         """Обработка задачи"""
         self._logger.info("Обработка задачи", extra={"task": task.task_id})
-        task = PictureProcessingTask.load(task.dump())
+        task = ImageProcessingTask.load(task.dump())
         file_id = task.file_id
         file = self._pg.query(FileInfo).filter(FileInfo.id == file_id).first()
         file_path = os.path.join(file.path_file, file.name + file.extension)
@@ -74,7 +74,7 @@ class TasksWorker(BaseMule):
             )
 
     def _update_task_info(
-        self, task: PictureProcessingTask, status: TaskStatus, processed_file_id=0
+        self, task: ImageProcessingTask, status: TaskStatus, processed_file_id=0
     ):
         """Обновление статуса задачи"""
         task.status = status
@@ -90,21 +90,21 @@ class TasksWorker(BaseMule):
             },
         )
         # with self._pg.begin():
-        if self._pg.get(PictureProcessingTask, task.task_id, with_for_update=True):
+        if self._pg.get(ImageProcessingTask, task.task_id, with_for_update=True):
             self._pg.merge(task)
             self._pg.commit()
             return task.reload()
 
-    def _get_task(self, task_id: int) -> PictureProcessingTask | None:
+    def _get_task(self, task_id: int) -> ImageProcessingTask | None:
         """Получение задачи из БД"""
         with self._pg.begin():
-            task: PictureProcessingTask = self._pg.execute(
-                sa.select(PictureProcessingTask)
+            task: ImageProcessingTask = self._pg.execute(
+                sa.select(ImageProcessingTask)
                 .filter(
                     sa.and_(
-                        sa_operator.eq(PictureProcessingTask.task_id, task_id),
+                        sa_operator.eq(ImageProcessingTask.task_id, task_id),
                         sa_operator.in_(
-                            PictureProcessingTask.status,
+                            ImageProcessingTask.status,
                             [
                                 TaskStatus.NEW,
                                 # В случае ручного восстановления работы
