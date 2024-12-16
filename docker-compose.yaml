@@ -21,11 +21,16 @@ services:
 
   image-processing:
     image: working-with-files:1.0.0
-    environment:
-      YAML_PATH: config_files/config.yaml
     restart: "always"
     ports:
       - "5000:5000"
+<<<<<<< HEAD
+=======
+    depends_on:
+      - db
+    env_file:
+      - .env
+>>>>>>> parent of 58ba2ff (environment секция, явное управление транзакциями)
     volumes:
       - /home/orbis-service/Projects/orbis_test_flask/config_files/:/src/config_files
 
