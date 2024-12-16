@@ -160,7 +160,7 @@ class WorkerWithFIles:
         try:
             if not file_id:
                 return {"message": "file_id is required"}
-            file = FileInfo.query.filter(FileInfo.id == file_id).first()
+            file = self._pg.query(FileInfo).filter(FileInfo.id == file_id).first()
             if not file:
                 return {"message": "File not found."}
             file_path = os.path.join(file.path_file, file.name + file.extension)
@@ -208,11 +208,15 @@ class WorkerWithFIles:
                     return {"file_id": new_file_info.id}
                 else:
                     return {"error": "Файл уже существет"}
-            file = FileInfo.query.filter(
-                FileInfo.name == file_name,
-                FileInfo.extension == file_extension,
-                FileInfo.path_file == upload_path,
-            ).first()
+            file = (
+                self._pg.query(FileInfo)
+                .filter(
+                    FileInfo.name == file_name,
+                    FileInfo.extension == file_extension,
+                    FileInfo.path_file == upload_path,
+                )
+                .first()
+            )
             if not file:
                 self._pg.add(new_file_info)
                 self._pg.commit()
@@ -253,7 +257,9 @@ class WorkerWithFIles:
     ) -> FileInfo:
         """Обновляет информацию о файле"""
         try:
-            file_obj = FileInfo.query.filter(FileInfo.id == int(file_id)).first()
+            file_obj = (
+                self._pg.query(FileInfo).filter(FileInfo.id == int(file_id)).first()
+            )
             if file_obj is None:
                 return {"message": "File not found."}
 

@@ -4,7 +4,6 @@ import os
 import yaml
 
 from base_module.models import Model
-from base_module.rabbit import RabbitFullConfig
 
 
 @dc.dataclass
@@ -27,7 +26,6 @@ class ProjectConfig(Model):
 
     pg: PgConfig = dc.field(default_factory=PgConfig)
     storage_dir: str = dc.field(default="/mnt")
-    rabbit: RabbitFullConfig = dc.field(default=None)
 
 
 config: ProjectConfig = ProjectConfig.load(
