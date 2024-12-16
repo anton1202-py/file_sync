@@ -17,5 +17,6 @@ COPY uwsgi.ini /src
 # Устанавливаем рабочую директорию
 WORKDIR /src
 
+
 # Запускаем приложение
 CMD ["uwsgi", "--ini", "uwsgi.ini"]

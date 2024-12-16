@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
 from base_module.exceptions import ModuleException
+from base_module.logger import ClassesLoggerAdapter
 from base_module.models import BaseOrmModel
 from base_module.singletons import ThreadIsolatedSingleton
 from config import PgConfig
@@ -19,7 +20,7 @@ class ConnectionsException(ModuleException):
     @classmethod
     def acquire_error(cls):
         try:
-            raise cls("Сервис временно недоступен", code=503)
+            raise cls(("Сервис временно недоступен").encode("utf-8"), code=503)
         except Exception as e:
             logging.error(str(e).encode("utf-8"))
 
@@ -42,6 +43,7 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
         self._acquire_error_timeout = acquire_error_timeout
         self._init_statements = init_statements or list()
         self._pg: t.Union[sa.orm.scoped_session, Session, None] = None
+        self._logger = ClassesLoggerAdapter.create(self)
 
     def _acquire_session(self) -> Session:
         if not self._pg:
@@ -76,7 +78,6 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
                     col.type.schema = col.type.schema or self._conf.schema
                     if col.type.schema not in schemas:
                         schemas.append(col.type.schema)
-
         return schemas
 
     def _init_db(self):
@@ -114,6 +115,19 @@ class PgConnectionInj(metaclass=ThreadIsolatedSingleton):
 
     def _disconnect(self, response: flask.Response):
         return response
+
+    def init_db(self):
+        while True:
+            try:
+                self._logger.debug("Инициализация базы данных")
+                return self._init_db()
+            except Exception as e:
+                self._logger.error(
+                    "Ошибка инициализации базы данны, ожидание",
+                    exc_info=True,
+                    extra={"e": e},
+                )
+                time.sleep(self._init_error_timeout)
 
     def setup(self, app: flask.Flask):
         app.after_request(self._disconnect)

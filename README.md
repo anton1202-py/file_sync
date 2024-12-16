@@ -1,12 +1,9 @@
-# Тестовое задание.  
+# Обработка изображений (масштабирование и поворот)
 
 ## Запуск проекта  
 
 Клонируйте проект себе на компьютер:  
-`git clone https://github.com/anton1202-py/orbis_test_flask.git`
-
-Установите заисимости:  
-`pip install -r requirements.txt`
+`git clone git@github.com:anton1202-py/file_sync.git`
 
 
 Запустите Докер

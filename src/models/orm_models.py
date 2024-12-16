@@ -3,7 +3,6 @@ import typing
 from datetime import datetime
 
 import sqlalchemy as sa
-from sqlalchemy import func
 
 from base_module.models import BaseOrmModel
 
@@ -13,7 +12,6 @@ class FileInfo(BaseOrmModel):
     """."""
 
     __tablename__ = "file_info"
-
     id: typing.Optional[int] = dc.field(
         default=None, metadata={"sa": sa.Column(sa.Integer, primary_key=True)}
     )
