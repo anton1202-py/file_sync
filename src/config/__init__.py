@@ -30,14 +30,6 @@ class ProjectConfig(Model):
     rabbit: RabbitFullConfig = dc.field(default=None)
 
 
-@dc.dataclass
-class SessionConfig(Model):
-    """."""
-
-    user: str = dc.field(default="")
-    project: str = dc.field(default="")
-
-
 config: ProjectConfig = ProjectConfig.load(
     yaml.safe_load(open(os.getenv("YAML_PATH", "config_files/config.yaml"))) or {}
 )
