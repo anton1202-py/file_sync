@@ -1,5 +1,5 @@
-CONTAINER_NAME=working-with-files-container
-IMAGE_NAME = working-with-files
+CONTAINER_NAME=file-sync-container
+IMAGE_NAME = file-sync
 DOCKERFILE = Dockerfile
 CONTEXT = .
 

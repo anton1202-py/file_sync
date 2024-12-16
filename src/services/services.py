@@ -74,16 +74,14 @@ class SyncFileWithDb:
         """Удаляет файлы из БД, если нет в файловом хранилище"""
         for root, dirs, files in os.walk(directory):
             data = (
-                self._pg.query(FileInfo)
-                .filter(FileInfo.path_file == str(root).replace("\\", "/"))
-                .all()
+                self._pg.query(FileInfo).filter(FileInfo.path_file == str(root)).all()
             )
             if data:
                 for file_obj in data:
                     common_file_path = os.path.join(
                         file_obj.path_file, file_obj.name + file_obj.extension
                     )
-                    if not common_file_path:
+                    if not os.path.isfile(common_file_path):
                         self._pg.delete(file_obj)
                         self._pg.commit()
 
