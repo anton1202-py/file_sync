@@ -2,7 +2,7 @@ import os
 from datetime import datetime
 from pathlib import Path
 
-from flask import Response, abort, send_file
+from flask import Response, abort, jsonify, send_file
 from sqlalchemy.orm import Session as PGSession
 
 from models.orm_models import FileInfo
@@ -164,6 +164,7 @@ class WorkerWithFIles:
             file_path = os.path.join(file.path_file, file.name + file.extension)
             if not os.path.isfile(file_path):
                 abort(404, description="File not found on server")
+
             return send_file(file_path, as_attachment=True)
         except Exception as e:
             return {"message": str(e)}
@@ -172,7 +173,7 @@ class WorkerWithFIles:
         """Загрузить файл в базу данных"""
 
         if file_obj is None or file_obj.filename == "":
-            return {"error": "No selected file"}
+            return jsonify({"error": "No selected file"}), 400
         if not upload_path:
             upload_path = self.storage_dir
         if not os.path.exists(upload_path):
@@ -190,22 +191,6 @@ class WorkerWithFIles:
             size=file_size,
         )
         try:
-
-            with self._pg.begin():
-                file = (
-                    self._pg.query(FileInfo)
-                    .filter(
-                        FileInfo.name == file_name,
-                        FileInfo.extension == file_extension,
-                        FileInfo.path_file == upload_path,
-                    )
-                    .first()
-                )
-                if not file:
-                    self._pg.add(new_file_info)
-                    return {"file_id": new_file_info.id}
-                else:
-                    return {"error": "Файл уже существет"}
             file = (
                 self._pg.query(FileInfo)
                 .filter(
@@ -218,11 +203,10 @@ class WorkerWithFIles:
             if not file:
                 self._pg.add(new_file_info)
                 self._pg.commit()
-                return {
-                    "message": f"File info saved successfully! File ID = {new_file_info.id}"
-                }
+                return jsonify({"file_id": new_file_info.id}), 200
             else:
-                return {"error": "Файл уже существет"}
+                return jsonify({"error": "Файл уже существует"}), 400
+
         except Exception as e:
             return {"error": str(e)}
 

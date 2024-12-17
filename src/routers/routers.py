@@ -40,7 +40,7 @@ def get_one_file_info(file_id):
 def download_file(file_id):
     fi = file_injector()
     response = fi.get_download_file(file_id=file_id)
-    return jsonify(response)
+    return response
 
 
 @file_router.post("/upload")
@@ -49,7 +49,7 @@ def upload_file():
     file_obj = request.files.getlist("")[0] if "" in request.files else None
     fi = file_injector()
     response = fi.upload_file(file_obj=file_obj, upload_path=upload_path)
-    return jsonify(response)
+    return response
 
 
 @file_router.delete("/files/<int:file_id>")
